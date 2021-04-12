@@ -11,7 +11,7 @@ Sklearn
 ```
 
 ## Data Digestion 
-- 510050_1m.xlsx: mintue quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains open, close, high, low, and trade volume. 
+- 510050_1m.csv: mintue quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains open, close, high, low, and trade volume. 
 
 ## File Digestion
 - preprocess.py: standardize each column and obtain their wavelet coefficients; assign -1, 0, and 1 to each row as stock trend label. 
