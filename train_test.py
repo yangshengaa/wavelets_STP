@@ -138,6 +138,10 @@ if __name__ == '__main__':
     print()
     train_test_boosting(X_train, X_test, Y_train, Y_test)
 
+
+    # the followings are for future build: some sort of running file in main instead of jupyter
+
+
     # # dump file content
     # with open(os.path.join(report_path, 'accuracy.txt'), 'w') as f:
     #     f.write('')
@@ -154,7 +158,3 @@ if __name__ == '__main__':
     # for p in p_list:
     #     p.join()
     # print('Finish Training and Testing')
-    #
-    # # tree
-    # # TODO: add a tree model
-    # # TODO: add an XGBOOST

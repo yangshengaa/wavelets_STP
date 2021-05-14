@@ -1,7 +1,8 @@
 # wavelets_STP
 This is an attempt to use wavelet coefficients obtained from discrete wavelet transform (DWT) as engineered features on stock trend prediction (STP), inspired by Multi-scale Two-way Deep Neural Network [paper](https://www.ijcai.org/Proceedings/2020/0628.pdf). 
+# TODO: HOW to cite properly? 
 
-## Requirment
+## Requirement
 ```
 Python 
 Numpy
@@ -22,6 +23,8 @@ Sklearn
 # TODO: revise citation 
 
 
-# TODO list:
-1. explore PCA's coefficients, see which patterns are most salient; (essentially, figure out why is the model so good, interprability)
-2. Train test split serially
+# Notes after Meeting with Professor Alex Cloninger:
+Date: 2021/05/14 
+1. explore PCA's coefficients, see which patterns are most salient; (essentially, figure out why is the model so good, interpretability)
+2. Train test split serially; do not look ahead! 
+3. Figure out how to upload files to git 

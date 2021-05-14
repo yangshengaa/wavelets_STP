@@ -11,7 +11,7 @@ long when a signal 2 is given, short when 0 is given, and clear when 1 is given.
 Once an action is dealt, ignore signal for lag many mintues 
 """
 
-# TODO: debugging
+# TODO: debugging: fixing indexing issues 
 
 from preprocess import * 
 from train_test import * 
