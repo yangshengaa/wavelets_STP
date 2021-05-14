@@ -14,7 +14,14 @@ Sklearn
 - 510050_1m.csv: mintue quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains open, close, high, low, and trade volume. 
 
 ## File Digestion
-- preprocess.py: standardize each column and obtain their wavelet coefficients; assign -1, 0, and 1 to each row as stock trend label. 
+- preprocess.py: standardize each column and obtain their wavelet coefficients; assign 0, 1, and 2 to each row as stock trend label. (0 for a decreasing trend, 1 for stationarity, and 2 for an increasing trend) 
 - train_test.py: fit a couple of classic ML models and track their accuracies; 
-- naive_trading.py: develop a simple long short trading strategy using the model with the best accuracy, and report some metrics on the strategies (annulized return, Sharpe Ratio, Calmar Ratio, maximum drawdown, and etc...)
+- naive_trading.py: develop a simple long short trading strategy using the model with the best accuracy, and report some metrics on the strategies (annualized return, Sharpe Ratio, Calmar Ratio, maximum drawdown, and etc...)
 
+
+# TODO: revise citation 
+
+
+# TODO list:
+1. explore PCA's coefficients, see which patterns are most salient; (essentially, figure out why is the model so good, interprability)
+2. Train test split serially
