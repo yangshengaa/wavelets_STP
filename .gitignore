@@ -1,0 +1,11 @@
+# every preprocessed data is too large to upload 
+preprocess/
+
+# do not upload any scratch files 
+test*
+
+# python files 
+.vscode/
+
+# windows files
+.DS Store
