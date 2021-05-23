@@ -25,15 +25,15 @@ import pywt
 
 # constants 
 file_path = 'data/510050_1m.csv'  # path to read from
-save_path = 'preprocess'  # path to save to
+save_path = 'preprocess'          # path to save to
 
 # parameters 
 window = 240  # window to look back (for current dataset, an entire day)
-lag = 5  # number of minutes to look forward
-th = 0.01  # threshold for claiming stationarity
+lag = 5       # number of minutes to look forward
+th = 0.005    # threshold for claiming stationarity
 
 # hyper-parameters
-mother_wavelet = 'db4'  # the wavelet we choose to decompose
+mother_wavelet = 'db4'           # the wavelet we choose to decompose
 use_cols = ['c', 'h', 'l', 'v']  # discard open
 
 
@@ -66,7 +66,9 @@ def label_data(data, window, lag, th):
         X_raw.append(standardized_data[t:t + window])
         # use movement of close prices to assign labels
         curr_close = standardized_data[t + window, 0]
-        price_movement = (standardized_data[t + window: t + window + lag, 0].mean() - curr_close) / curr_close
+        price_movement = (
+            standardized_data[t + window: t + window + lag, 0].mean() - curr_close
+        ) / curr_close
         # give labels 
         if price_movement > th:
             Y.append(2)
@@ -104,7 +106,7 @@ def transform(X_raw):
     return out
 
 
-def save_preprocess(X, Y, save_path='preprocess', n_rows=40000):
+def save_preprocess(X, Y, save_path='preprocess', n_rows=50000):
     """
     save all preprocessed data into a csv for training and testing purposes
 

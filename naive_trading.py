@@ -18,9 +18,9 @@ from train_test import *
 
 
 # hypter parameter 
-window = 240  # window to look back (for current dataset, an entire day)
-lag = 5  # number of minutes to look forward
-th = 0.01  # threshold for claiming stationarity
+window = 240        # window to look back (for current dataset, an entire day)
+lag = 5             # number of minutes to look forward
+th = 0.001          # threshold for claiming stationarity
 
 train_days = 180    # number of days as the training dataset 
 test_days = 20      # number of days as testing dataset 
@@ -43,34 +43,31 @@ def label_data_and_transform(data, window, lag, th, split_at):
     # merge together 
     standardized_data = np.append(train_standardized, test_standardized, axis=0)
     
-    # give labels and split 
+    # give labels to training
     num_data = standardized_data.shape[0]
     X_train, X_test, Y_train = [], [], []
     for t in range(window, split_at):
         X_train.append(standardized_data[t - window:t])
         curr_close = standardized_data[t, 0]
-
-    
-    X_raw, Y = [], []
-    for t in range(standardized_data.shape[0] - window - lag):
-        X_raw.append(standardized_data[t:t + window])
-        # use movement of close prices to assign labels
-        curr_close = standardized_data[t, 0]
         price_movement = (
-            standardized_data[t + window: t + window + lag, 0].mean() - curr_close
-            ) / curr_close
-        # give labels
+            standardized_data[t: t + lag, 0].mean() - curr_close
+        ) / curr_close
         if price_movement > th:
-            Y.append(2)
+            Y_train.append(2)
         elif price_movement < -th:
-            Y.append(0)
+            Y_train.append(0)
         else:
-            Y.append(1)
+            Y_train.append(1)
     
-    # obtain train and test dataset 
+    # obtain testing features 
+    X_test = []
+    for t in range(split_at, num_data):
+        X_test.append(standardized_data[t - window:t])
+
+    # combine and feed to wavelet transform
+    X_raw = np.append(X_train, X_test)
     X = transform(np.array(X_raw))  # contains both training and testing periods 
-    X_train, X_test = np.split(X, [split_at])
-    Y_train, _ = np.split(Y, [split_at])      # contains training periods only 
+    X_train, X_test = np.split(X, [split_at - window])
 
     # assign indices 
     train_idx = train_dataset.index 
@@ -83,7 +80,12 @@ def label_data_and_transform(data, window, lag, th, split_at):
 
 def train_assign_direction_by_period(X_train, Y_train, X_test):
     """
-    use xgboost to train and give directions        # TODO: modify comments 
+    in each training/testing period, use XGBoost trained with X_train and Y_train to give 
+    directions on X_test. 
+
+    :param X_train: the flattened wavelet features at each timestamp 
+    :param Y_train: the training labels (0, 1, and 2) for the training period 
+    :param X_test: the flattened wavelet features at each timestamp for testing 
     """
     # pca 
     pca_transformer = PCA(n_components=20).fit(X_train)
@@ -107,8 +109,12 @@ def train_assign_direction(raw_data,
                            train_days=train_days, test_days=test_days
                           ):
     """
+    Given the raw data, on a rolling basis, train on train_days many days 
+    and trade for the next test_day many days. The trading signals are given 
+    by XGBoost trained on the train_days many days of data. 
+
     :param raw_data: the data of the original csv 
-    :return the decision after each minute  # TODO: modify comments 
+    :return the decision after each minute  
     """ 
     data_to_use = raw_data[['c', 'h', 'l', 'v']]
     train_period, test_period = train_days * 241, test_days * 241

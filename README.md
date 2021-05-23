@@ -2,7 +2,6 @@
 
 This is an attempt to use wavelet coefficients obtained from discrete wavelet transform (DWT) and wavelet packets (WPT) as engineered features on stock trend prediction (STP). This project is inspired by [Multi-scale Two-way Deep Neural Network](https://www.ijcai.org/Proceedings/2020/0628.pdf).
 
-
 ## Data Digestion
 
 - 510050_1m.csv: minute quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains open, close, high, low, and trade volume.
@@ -13,7 +12,7 @@ This is an attempt to use wavelet coefficients obtained from discrete wavelet tr
 - **train_test.py**: fit a couple of classic ML models and track their accuracies;
 - **naive_trading.py**: develop a simple long short trading strategy using the model with the best accuracy, and report some metrics on the strategies (annualized return, Sharpe Ratio, Calmar Ratio, maximum drawdown, and etc...)
 
-## For developer: Notes after Meeting with Professor Alex Cloninger:
+## For developer: Notes after Meeting with Professor Alex Cloninger
 
 Date: 2021/05/14
 
