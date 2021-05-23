@@ -1,5 +1,3 @@
-# TODO: update file header 
-
 """
 File name: preprocess.py
 author: Sheng Yang
@@ -13,7 +11,8 @@ lag = 5 many minutes are examined for labeling trend.
 Steps: 
 1. standardize each column;
 2. assign labels; 
-3. for each window * 5 matrix, apply wavelet decomposition down to maximum level of the desired mother wavelet
+3. for each window * 5 matrix, apply wavelet decomposition down to maximum level of the desired mother wavelet; flatten them and obtain the feature vector 
+4. store in preprocess folder
 """
 
 # load packages
@@ -21,13 +20,11 @@ import os
 import numpy as np
 import pandas as pd
 from multiprocessing import Process
-import numba
 from sklearn.preprocessing import StandardScaler
 import pywt
 
 # constants 
-curr_folder = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(curr_folder, 'data/510050_1m.csv')  # path to read from
+file_path = 'data/510050_1m.csv'  # path to read from
 save_path = 'preprocess'  # path to save to
 
 # parameters 
@@ -68,7 +65,7 @@ def label_data(data, window, lag, th):
     for t in range(standardized_data.shape[0] - window - lag):
         X_raw.append(standardized_data[t:t + window])
         # use movement of close prices to assign labels
-        curr_close = standardized_data[t, 0]
+        curr_close = standardized_data[t + window, 0]
         price_movement = (standardized_data[t + window: t + window + lag, 0].mean() - curr_close) / curr_close
         # give labels 
         if price_movement > th:
@@ -101,9 +98,9 @@ def transform(X_raw):
     :param X_raw: the standardized X from the original dataframe
     :return the wavelet features flattened in each row
     """
-    # print('Obtaining New Features from Wavelet Coefficients ...')
+    print('Obtaining New Features from Wavelet Coefficients ...')
     out = np.array([dwt(x) for x in X_raw])
-    # print('Finish Feature Engineering')
+    print('Finish Feature Engineering')
     return out
 
 

@@ -22,8 +22,8 @@ window = 240  # window to look back (for current dataset, an entire day)
 lag = 5  # number of minutes to look forward
 th = 0.01  # threshold for claiming stationarity
 
-train_days = 360    # number of days as the training dataset 
-test_days = 60      # number of days as testing dataset 
+train_days = 180    # number of days as the training dataset 
+test_days = 20      # number of days as testing dataset 
 
 
 # TODO: modify comments 
@@ -44,13 +44,21 @@ def label_data_and_transform(data, window, lag, th, split_at):
     standardized_data = np.append(train_standardized, test_standardized, axis=0)
     
     # give labels and split 
+    num_data = standardized_data.shape[0]
+    X_train, X_test, Y_train = [], [], []
+    for t in range(window, split_at):
+        X_train.append(standardized_data[t - window:t])
+        curr_close = standardized_data[t, 0]
+
+    
     X_raw, Y = [], []
     for t in range(standardized_data.shape[0] - window - lag):
         X_raw.append(standardized_data[t:t + window])
         # use movement of close prices to assign labels
         curr_close = standardized_data[t, 0]
         price_movement = (
-            standardized_data[t + window: t + window + lag, 0].mean() - curr_close) / curr_close
+            standardized_data[t + window: t + window + lag, 0].mean() - curr_close
+            ) / curr_close
         # give labels
         if price_movement > th:
             Y.append(2)
