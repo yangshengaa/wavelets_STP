@@ -4,8 +4,9 @@ preprocess/
 # do not upload any scratch files 
 test*
 
-# python files 
+# python  
 .vscode/
+__pycache__/
 
 # windows files
 .DS Store
