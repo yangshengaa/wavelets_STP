@@ -128,19 +128,25 @@ def train_test_xgb(X_train, X_test, Y_train, Y_test):
 
 
 if __name__ == '__main__':
+    # TODO: sequential split 
     # reading in the data
     X, Y = load_preprocess_data()
-    pca = PCA(n_components=10)
-    X_reduced = pca.fit_transform(X)
-    X_train, X_test, Y_train, Y_test = train_test_split(X_reduced, Y)    # train test split
 
+    # sequential split
+    X_train_complete, X_test_complete, Y_train, Y_test = \
+        train_test_split(X, Y, shuffle=False)
+
+    # PCA
+    pca = PCA(n_components=20)
+    pca.fit(X_train_complete)
+    X_train = pca.transform(X_train_complete)
+    X_test = pca.transform(X_test_complete)
+
+    print('Start Training')
     train_test_xgb(X_train, X_test, Y_train, Y_test)
-    print()
-    train_test_boosting(X_train, X_test, Y_train, Y_test)
-
+    print('End Training')
 
     # the followings are for future build: some sort of running file in main instead of jupyter
-
 
     # # dump file content
     # with open(os.path.join(report_path, 'accuracy.txt'), 'w') as f:

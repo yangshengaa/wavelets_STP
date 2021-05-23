@@ -29,9 +29,8 @@ test_days = 60      # number of days as testing dataset
 # TODO: modify comments 
 def label_data_and_transform(data, window, lag, th, split_at):
     """
-    standardize high, low, close, and vol based on training period 
-    and transform both training and testing periods. Then, give labels according 
-    to the window, lag, and threshold
+    split the partitioned dataset further into training the testing periods, 
+    assign labels to the window, lag, and threshold 
 
     :param split_at: the index position of the start of the testing period 
     """
@@ -123,19 +122,24 @@ def train_assign_direction(raw_data,
         # give directions 
         direction_curr_period = train_assign_direction_by_period(X_train, Y_train, X_test)
         print(direction_curr_period)
-        direction = direction.append(direction_curr_period)
+        direction = pd.concat([direction, direction_curr_period])
         print(f'Finish training period {i}')
     return direction
 
 
-# TODO Add comments 
 # TODO fix alignment issue 
 def trade(raw_data, direction):
     """
-    
+    given the raw_data and computed direction predicted by XGBoost, 
+    how does the strategy perform in reality? 
+
+    :param raw_data: the raw_data read from the preprocess folder 
+    :param direction: the direction (0, 1, or 2) computed by XGBoost 
+    :return a series of net values guided by the XGBoost predictions
     """
     direction = pd.Series(direction)
-    trade_start_idx = raw_data.shape[0] - direction.shape[0]
+    trade_start_idx = raw_data.shape[0] - direction.shape[0]  # should equal to window 
+    print(trade_start_idx)
     trade_data = raw_data.loc[trade_start_idx:]
     
     min_ret = trade_data.c.pct_change()
@@ -153,6 +157,6 @@ def trade(raw_data, direction):
 
 
 if __name__ == '__main__':
-    raw_data = load_data()
-    direction = train_assign_direction(raw_data)
+    raw_data = load_data()  # from preprocess 
+    direction = train_assign_direction(raw_data)  
     trade(raw_data, direction)

@@ -1,15 +1,7 @@
 # wavelets_STP
-This is an attempt to use wavelet coefficients obtained from discrete wavelet transform (DWT) as engineered features on stock trend prediction (STP), inspired by Multi-scale Two-way Deep Neural Network [paper](https://www.ijcai.org/Proceedings/2020/0628.pdf).
 
-## Requirement
+This is an attempt to use wavelet coefficients obtained from discrete wavelet transform (DWT) and wavelet packets (WPT) as engineered features on stock trend prediction (STP). This project is inspired by [Multi-scale Two-way Deep Neural Network](https://www.ijcai.org/Proceedings/2020/0628.pdf).
 
-```
-Python 
-Numpy
-Pandas
-Sklearn 
-... 
-```
 
 ## Data Digestion
 
@@ -17,14 +9,17 @@ Sklearn
 
 ## File Digestion
 
-- preprocess.py: standardize each column and obtain their wavelet coefficients; assign 0, 1, and 2 to each row as stock trend label. (0 for a decreasing trend, 1 for stationarity, and 2 for an increasing trend)
-- train_test.py: fit a couple of classic ML models and track their accuracies;
-- naive_trading.py: develop a simple long short trading strategy using the model with the best accuracy, and report some metrics on the strategies (annualized return, Sharpe Ratio, Calmar Ratio, maximum drawdown, and etc...)
+- **preprocess.py**: standardize each column and obtain their wavelet coefficients; assign 0, 1, and 2 to each row as stock trend label. (0 for a decreasing trend, 1 for stationarity, and 2 for an increasing trend)
+- **train_test.py**: fit a couple of classic ML models and track their accuracies;
+- **naive_trading.py**: develop a simple long short trading strategy using the model with the best accuracy, and report some metrics on the strategies (annualized return, Sharpe Ratio, Calmar Ratio, maximum drawdown, and etc...)
 
-## Notes after Meeting with Professor Alex Cloninger:
+## For developer: Notes after Meeting with Professor Alex Cloninger:
 
 Date: 2021/05/14
 
 1. explore PCA's coefficients, see what patterns from which columns are most salient, figure out why the model looks good --> acquire interpretability
 2. Train test split serially; do not look ahead!
-3. Figure out how to upload files to git
+
+## Technical issues
+
+If XGBoost yields a segmentation fault, this could be resolved by uninstalling numpy, scipy, scikit-learn, XGBoost, and then only install XGBoost and scikit-learn.
