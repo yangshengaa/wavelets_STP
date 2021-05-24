@@ -2,6 +2,6 @@
     "window": 240,
     "lag": 10,
     "th": 0.005,
-    "train_days": 720,
-    "test_days": 60 
+    "train_days": 180,
+    "test_days": 20
 }

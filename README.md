@@ -4,7 +4,7 @@ This is an attempt to use wavelet coefficients obtained from discrete wavelet tr
 
 ## Data Digestion
 
-- 510050_1m.csv: minute quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains open, close, high, low, and trade volume.
+- **data/510050_1m.csv**: minute quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains date, time, open, close, high, low, and trade volume.
 
 ## File Digestion
 
@@ -16,8 +16,8 @@ This is an attempt to use wavelet coefficients obtained from discrete wavelet tr
 
 Date: 2021/05/14
 
-1. explore PCA's coefficients, see what patterns from which columns are most salient, figure out why the model looks good --> acquire interpretability
-2. Train test split serially; do not look ahead!
+1. explore PCA's coefficients, see what patterns from which columns are most salient, figure out why the model looks good --> acquire interpretability (Yet to explore)
+2. Train test split serially; do not look ahead! (Fixed)
 
 ## Technical issues
 

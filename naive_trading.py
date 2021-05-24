@@ -162,8 +162,9 @@ def trade(raw_data, direction):
     # make a plot 
     plt.plot(cum_ret)
     plt.plot(guided_cum_ret)
-    plt.show()
-    plt.savefig('report/naive_trading.png')
+    plt.legend(['asset return', 'wavelet guided return'])
+    plt.title(f'Wavelet returns vs asset return: {train_days}, {test_days}')
+    plt.savefig(f'report/naive_trading_{train_days}_{test_days}.png')
     return cum_ret, guided_cum_ret
 
 
