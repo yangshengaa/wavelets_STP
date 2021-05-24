@@ -1,16 +1,8 @@
-Logistic Regression 
-Train Score: 0.4779504880158142
-Test  Score: 0.21528678650852484
-
-Linear SVM 
-Train Score: 0.5116984803558191
-Test  Score: 0.21968819495922906
-
 Gradient Boosting 
-Train Score: 0.5638513096120583
-Test  Score: 0.5859780392883618
+Train Score: 0.5633300901902644
+Test  Score: 0.5858622127501854
 
 XGBoost Classifier 
-Train Score: 0.6607942611811218
-Test  Score: 0.5577163639733136
+Train Score: 0.6577634667655053
+Test  Score: 0.5595580059303188
 
