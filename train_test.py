@@ -136,6 +136,9 @@ def train_test_xgb(X_train, X_test, Y_train, Y_test):
     write_report('XGBoost Classifier', xgb_train_acc, xgb_test_acc)
 
 
+"""
+Everything below is for testing purposes. No need to run this script.
+"""
 if __name__ == '__main__':
     # reading in the data
     X, Y = load_preprocess_data()

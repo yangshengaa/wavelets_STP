@@ -2,6 +2,8 @@
 
 This is an attempt to use wavelet coefficients obtained from discrete wavelet transform (DWT) and wavelet packets (WPT) as engineered features on stock trend prediction (STP). This project is inspired by [Multi-scale Two-way Deep Neural Network](https://www.ijcai.org/Proceedings/2020/0628.pdf).
 
+Example: For the next 120 days, use XGBoost classifier on the previous 720 days ![Demo Trading](report/naive_trading_720_120.png)
+
 ## Data Digestion
 
 - **data/510050_1m.csv**: minute quote of 510050, a major index in mainland China, from 2015 to 2020. Each row contains date, time, open, close, high, low, and trade volume.
