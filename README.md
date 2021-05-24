@@ -19,10 +19,13 @@ Example: For the next 120 days, use XGBoost classifier on the previous 720 days
 
 ## For developer: Notes after Meeting with Professor Alex Cloninger
 
-Date: 2021/05/14
+Date: 2021/05/24
 
-1. explore PCA's coefficients, see what patterns from which columns are most salient, figure out why the model looks good --> acquire interpretability (Yet to explore)
-2. Train test split serially; do not look ahead! (Fixed)
+1. Interpretability:
+   1. Add wavelet functions back to obtain the denoised sequence and compare;
+   2. Visualize coefficients on a tree structure;
+   3. Try sparse component analysis/nonnegative matrix factorization
+2. Use validation set more often: pick the best performing parameters on validation set and look at performance on the upcoming testing set.
 
 ## Technical issues
 
