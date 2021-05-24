@@ -3,5 +3,5 @@
     "lag": 10,
     "th": 0.005,
     "train_days": 720,
-    "test_days": 120
+    "test_days": 60
 }
