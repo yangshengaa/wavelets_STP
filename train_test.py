@@ -137,7 +137,6 @@ def train_test_xgb(X_train, X_test, Y_train, Y_test):
 
 
 if __name__ == '__main__':
-    # TODO: sequential split 
     # reading in the data
     X, Y = load_preprocess_data()
 
@@ -158,18 +157,18 @@ if __name__ == '__main__':
     # the followings are for future build: some sort of running file in main instead of jupyter
 
     # dump file content
-    with open(os.path.join(report_path, 'accuracy.txt'), 'w') as f:
-        f.write('')
+    # with open(os.path.join(report_path, 'accuracy.txt'), 'w') as f:
+    #     f.write('')
     
-    # initialize processes
-    p_lg = mp.Process(target=train_test_lg, args=(X_train, X_test, Y_train, Y_test))
-    p_boosting = mp.Process(target=train_test_boosting, args=(X_train, X_test, Y_train, Y_test))
-    p_list = [p_lg, p_boosting]
+    # # initialize processes
+    # p_lg = mp.Process(target=train_test_lg, args=(X_train, X_test, Y_train, Y_test))
+    # p_boosting = mp.Process(target=train_test_boosting, args=(X_train, X_test, Y_train, Y_test))
+    # p_list = [p_lg, p_boosting]
     
-    # start training
-    print('Start Training and Testing')
-    for p in p_list:
-        p.start()
-    for p in p_list:
-        p.join()
-    print('Finish Training and Testing')
+    # # start training
+    # print('Start Training and Testing')
+    # for p in p_list:
+    #     p.start()
+    # for p in p_list:
+    #     p.join()
+    # print('Finish Training and Testing')

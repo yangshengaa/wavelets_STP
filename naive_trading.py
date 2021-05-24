@@ -11,8 +11,6 @@ Once an action is dealt, ignore signal for lag many mintues
 TODO: what should be the benchmark? 
 """
 
-# TODO: debugging: fixing indexing issues 
-
 import json
 from preprocess import * 
 from train_test import * 
@@ -65,11 +63,9 @@ def label_data_and_transform(data, window=window, lag=lag, th=th, split_at=train
     X_test = transform(X_test)
 
     # assign indices (TO BE REMOVED LATER ON)
-    train_idx = train_dataset.index[window:]
     test_idx = test_dataset.index 
-    X_train = pd.DataFrame(X_train, index=train_idx)
-    Y_train = pd.Series(Y_train, index=train_idx)
-    X_test = pd.DataFrame(X_test, index=test_idx)   # TODO: fix index alignment issue 
+    Y_train = np.array(Y_train, dtype=int)
+    X_test = pd.DataFrame(X_test, index=test_idx)   
     return X_train, Y_train, X_test
 
 
@@ -104,19 +100,16 @@ def pipeline_each_period(data_chunk):
     pipelining the process for each period to facilitate multiprocessing 
     """
     # standardize and transform
-    print('Start Training')
+    # print('Start Training')
     X_train, Y_train, X_test = label_data_and_transform(data_chunk)
     # give directions
     direction_curr_period = train_assign_direction_by_period(
         X_train, Y_train, X_test)
-    print('Finish Training')
+    # print('Finish Training')
     return direction_curr_period
 
 
-
-# TODO: wrapped using multiprocessing 
 def train_assign_direction(raw_data, 
-                           window=window, lag=lag, th=th, 
                            train_days=train_days, test_days=test_days
                           ):
     """
@@ -146,11 +139,9 @@ def train_assign_direction(raw_data,
         directions = pool.map(pipeline_each_period, data_chunks)
 
     direction = pd.concat(directions)
-    print(direction)
     return direction
 
 
-# TODO fix alignment issue 
 def trade(raw_data, direction):
     """
     given the raw_data and computed direction predicted by XGBoost, 
@@ -160,12 +151,10 @@ def trade(raw_data, direction):
     :param direction: the direction (0, 1, or 2) computed by XGBoost 
     :return a series of net values guided by the XGBoost predictions
     """
-    trade_start_idx = raw_data.shape[0] - direction.shape[0]  # should equal to window 
-    print(trade_start_idx)
-    trade_data = raw_data.loc[trade_start_idx:]
+    trade_data = raw_data.loc[direction.index]
     
     min_ret = trade_data.c.pct_change()
-    guided_min_ret = min_ret.reset_index(drop=True) * (direction - 1).shift(1)
+    guided_min_ret = min_ret * (direction - 1).shift(1)
 
     cum_ret = (min_ret + 1).cumprod()
     guided_cum_ret = (guided_min_ret + 1).cumprod()
@@ -174,11 +163,11 @@ def trade(raw_data, direction):
     plt.plot(cum_ret)
     plt.plot(guided_cum_ret)
     plt.show()
-    plt.savefig(os.path.join(report_path, 'naive_trading.png'))
+    plt.savefig('report/naive_trading.png')
     return cum_ret, guided_cum_ret
 
 
 if __name__ == '__main__':
     raw_data = load_data()  # from preprocess 
     direction = train_assign_direction(raw_data)  # obtain directions 
-    trade(raw_data, direction)  # trade 
+    cum_ret, guided_cum_ret = trade(raw_data, direction)  # trade 
