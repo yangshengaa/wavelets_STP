@@ -17,6 +17,7 @@ Steps:
 
 # load packages
 import os
+import json
 import numpy as np
 import pandas as pd
 from multiprocessing import Process
@@ -27,10 +28,10 @@ import pywt
 file_path = 'data/510050_1m.csv'  # path to read from
 save_path = 'preprocess'          # path to save to
 
-# parameters 
-window = 240  # window to look back (for current dataset, an entire day)
-lag = 5       # number of minutes to look forward
-th = 0.005    # threshold for claiming stationarity
+# load parameters
+with open('parameters/parameters.json', 'r') as f:
+    param_dict = json.load(f)
+    window, lag, th, train_days, test_days = param_dict.values()
 
 # hyper-parameters
 mother_wavelet = 'db4'           # the wavelet we choose to decompose
@@ -100,9 +101,9 @@ def transform(X_raw):
     :param X_raw: the standardized X from the original dataframe
     :return the wavelet features flattened in each row
     """
-    print('Obtaining New Features from Wavelet Coefficients ...')
+    # print('Obtaining New Features from Wavelet Coefficients ...')
     out = np.array([dwt(x) for x in X_raw])
-    print('Finish Feature Engineering')
+    # print('Finish Feature Engineering')
     return out
 
 

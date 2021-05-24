@@ -1,3 +1,12 @@
+"""
+File name: train_test.py
+author: Sheng Yang
+Date Created: 2021/04/12
+
+This file compares performances of different ML models on 
+predicting the stock trend using wavelet coefficients 
+"""
+
 # load preprocessing
 import os
 import multiprocessing as mp

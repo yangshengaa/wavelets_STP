@@ -1,0 +1,7 @@
+{
+    "window": 240,
+    "lag": 10,
+    "th": 5,
+    "train_days": 180,
+    "test_days": 20
+}

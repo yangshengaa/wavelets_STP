@@ -1,33 +1,29 @@
-# set up a trading scheme by wavelet decomposition, 
-# compare the returns by different prediction models. 
-
-# what should be the benchmark?
-
 """
-set up a naive high-freqency trading strategy.
+file name: naive_trading.py
+author: Sheng Yang
+Date Created: 2021/04/12
 
+set up a naive high-freqency trading strategy.
 Rules: 
 long when a signal 2 is given, short when 0 is given, and clear when 1 is given. 
 Once an action is dealt, ignore signal for lag many mintues 
+
+TODO: what should be the benchmark? 
 """
 
 # TODO: debugging: fixing indexing issues 
 
+import json
 from preprocess import * 
 from train_test import * 
 
-
-# hypter parameter 
-window = 240        # window to look back (for current dataset, an entire day)
-lag = 5             # number of minutes to look forward
-th = 0.001          # threshold for claiming stationarity
-
-train_days = 180    # number of days as the training dataset 
-test_days = 20      # number of days as testing dataset 
+# load parameters 
+with open('parameters/parameters.json', 'r') as f:
+    param_dict = json.load(f)
+    window, lag, th, train_days, test_days = param_dict.values()
 
 
-# TODO: modify comments 
-def label_data_and_transform(data, window, lag, th, split_at):
+def label_data_and_transform(data, window=window, lag=lag, th=th, split_at=train_days * 241):
     """
     split the partitioned dataset further into training the testing periods, 
     assign labels to the window, lag, and threshold 
@@ -48,6 +44,7 @@ def label_data_and_transform(data, window, lag, th, split_at):
     X_train, X_test, Y_train = [], [], []
     for t in range(window, split_at):
         X_train.append(standardized_data[t - window:t])
+        # assign labels by close price movements 
         curr_close = standardized_data[t, 0]
         price_movement = (
             standardized_data[t: t + lag, 0].mean() - curr_close
@@ -60,17 +57,15 @@ def label_data_and_transform(data, window, lag, th, split_at):
             Y_train.append(1)
     
     # obtain testing features 
-    X_test = []
     for t in range(split_at, num_data):
         X_test.append(standardized_data[t - window:t])
 
-    # combine and feed to wavelet transform
-    X_raw = np.append(X_train, X_test)
-    X = transform(np.array(X_raw))  # contains both training and testing periods 
-    X_train, X_test = np.split(X, [split_at - window])
+    # obtain wavelet coefficients
+    X_train = transform(X_train)
+    X_test = transform(X_test)
 
-    # assign indices 
-    train_idx = train_dataset.index 
+    # assign indices (TO BE REMOVED LATER ON)
+    train_idx = train_dataset.index[window:]
     test_idx = test_dataset.index 
     X_train = pd.DataFrame(X_train, index=train_idx)
     Y_train = pd.Series(Y_train, index=train_idx)
@@ -104,6 +99,22 @@ def train_assign_direction_by_period(X_train, Y_train, X_test):
     return pd.Series(Y_test_prediction, index=test_idx)
 
 
+def pipeline_each_period(data_chunk):
+    """
+    pipelining the process for each period to facilitate multiprocessing 
+    """
+    # standardize and transform
+    print('Start Training')
+    X_train, Y_train, X_test = label_data_and_transform(data_chunk)
+    # give directions
+    direction_curr_period = train_assign_direction_by_period(
+        X_train, Y_train, X_test)
+    print('Finish Training')
+    return direction_curr_period
+
+
+
+# TODO: wrapped using multiprocessing 
 def train_assign_direction(raw_data, 
                            window=window, lag=lag, th=th, 
                            train_days=train_days, test_days=test_days
@@ -121,23 +132,21 @@ def train_assign_direction(raw_data,
     num_chunk = (data_to_use.shape[0] - train_period) // test_period
 
     # obtain directions 
-    direction = pd.Series([], dtype=int)
+    data_chunks = []
     for i in range(num_chunk + 1):
-        print(f'Training period {i}')
         # obtain train and test dataset 
         train_start_idx = i * test_period
         train_end_idx = train_start_idx + train_period  # also the test start idx 
         test_end_idx = train_end_idx + test_period
         data_chunk = data_to_use.loc[train_start_idx:test_end_idx - 1]
-        
-        # standardize and transform 
-        X_train, Y_train, X_test = label_data_and_transform(data_chunk, window, lag, th, train_period)
-        
-        # give directions 
-        direction_curr_period = train_assign_direction_by_period(X_train, Y_train, X_test)
-        print(direction_curr_period)
-        direction = pd.concat([direction, direction_curr_period])
-        print(f'Finish training period {i}')
+        data_chunks.append(data_chunk)
+    
+    # multiprocessing to process each chunk 
+    with mp.Pool() as pool:
+        directions = pool.map(pipeline_each_period, data_chunks)
+
+    direction = pd.concat(directions)
+    print(direction)
     return direction
 
 
@@ -151,7 +160,6 @@ def trade(raw_data, direction):
     :param direction: the direction (0, 1, or 2) computed by XGBoost 
     :return a series of net values guided by the XGBoost predictions
     """
-    direction = pd.Series(direction)
     trade_start_idx = raw_data.shape[0] - direction.shape[0]  # should equal to window 
     print(trade_start_idx)
     trade_data = raw_data.loc[trade_start_idx:]
@@ -172,5 +180,5 @@ def trade(raw_data, direction):
 
 if __name__ == '__main__':
     raw_data = load_data()  # from preprocess 
-    direction = train_assign_direction(raw_data)  
-    trade(raw_data, direction)
+    direction = train_assign_direction(raw_data)  # obtain directions 
+    trade(raw_data, direction)  # trade 
