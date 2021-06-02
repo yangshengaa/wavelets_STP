@@ -3,6 +3,7 @@ preprocess/
 
 # do not upload any scratch files 
 test*
+demo.ipynb
 
 # python  
 .vscode/
