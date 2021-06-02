@@ -4,7 +4,7 @@ This is an attempt to use wavelet coefficients obtained from discrete wavelet tr
 
 Example: For the next 120 days, use XGBoost classifier on the previous 720 days
 <p align="center">
-  <img src="report/naive_trading_720_120.png" />
+  <img src="naive_trading_720_120.png" />
 </p>
 
 ## Data Digestion
@@ -26,6 +26,8 @@ Date: 2021/05/24
    2. Visualize coefficients on a tree structure;
    3. Try sparse component analysis/nonnegative matrix factorization
 2. Use validation set more often: pick the best performing parameters on validation set and look at performance on the upcoming testing set.
+3. Presentable project style: [Documenting your projects on GitHub](https://guides.github.com/features/wikis/)
+4. Change starting point for 720/120; visualize confusion matrix at each period.
 
 ## Technical issues
 

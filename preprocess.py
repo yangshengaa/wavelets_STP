@@ -13,6 +13,10 @@ Steps:
 2. assign labels; 
 3. for each window * 5 matrix, apply wavelet decomposition down to maximum level of the desired mother wavelet; flatten them and obtain the feature vector 
 4. store in preprocess folder
+
+TODO: change writing to parquet for faster IO 
+TODO: change functions to cater to pandas apply for better performances
+
 """
 
 # load packages

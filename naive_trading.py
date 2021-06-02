@@ -125,20 +125,23 @@ def train_assign_direction(raw_data,
     num_chunk = (data_to_use.shape[0] - train_period) // test_period
 
     # obtain directions 
-    data_chunks = []
+    # data_chunks = []
+    direction = pd.Series([], dtype=int)
     for i in range(num_chunk + 1):
         # obtain train and test dataset 
         train_start_idx = i * test_period
         train_end_idx = train_start_idx + train_period  # also the test start idx 
         test_end_idx = train_end_idx + test_period
         data_chunk = data_to_use.loc[train_start_idx:test_end_idx - 1]
-        data_chunks.append(data_chunk)
+        # data_chunks.append(data_chunk)
+        print(f'Training period {i}')
+        direction = pd.concat([direction, pipeline_each_period(data_chunk)])
     
-    # multiprocessing to process each chunk 
-    with mp.Pool() as pool:
-        directions = pool.map(pipeline_each_period, data_chunks)
+    # multiprocessing to process each chunk (TODO: FIX mp)
+    # with mp.Pool() as pool:
+    #     directions = pool.map(pipeline_each_period, data_chunks)
 
-    direction = pd.concat(directions)
+    # direction = pd.concat(directions)
     return direction
 
 

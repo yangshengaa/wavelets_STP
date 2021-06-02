@@ -5,6 +5,9 @@ Date Created: 2021/04/12
 
 This file compares performances of different ML models on 
 predicting the stock trend using wavelet coefficients 
+
+TODO: change to reading parquet 
+
 """
 
 # load preprocessing
