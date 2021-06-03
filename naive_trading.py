@@ -41,7 +41,7 @@ def label_data_and_transform(data, window=window, lag=lag, th=th, split_at=train
     num_data = standardized_data.shape[0]
     X_train, X_test, Y_train = [], [], []
     for t in range(window, split_at):
-        X_train.append(standardized_data[t - window:t])
+        X_train.append(dwt(standardized_data[t - window:t]))
         # assign labels by close price movements 
         curr_close = standardized_data[t, 0]
         price_movement = (
@@ -55,18 +55,30 @@ def label_data_and_transform(data, window=window, lag=lag, th=th, split_at=train
             Y_train.append(1)
     
     # obtain testing features 
+    # add Y_test to plot confusion matrix 
+    Y_test = []
     for t in range(split_at, num_data):
-        X_test.append(standardized_data[t - window:t])
-
-    # obtain wavelet coefficients
-    X_train = transform(X_train)
-    X_test = transform(X_test)
+        X_test.append(dwt(standardized_data[t - window:t]))
+        
+        # adding Y_test for making confusion matrix plot 
+        # note that the last lag number of labels are incorrect 
+        curr_close = standardized_data[t, 0]
+        price_movement = (
+            standardized_data[t: t + lag, 0].mean() - curr_close
+        ) / curr_close
+        if price_movement > th:
+            Y_test.append(2)
+        elif price_movement < -th:
+            Y_test.append(0)
+        else:
+            Y_test.append(1)
 
     # assign indices (TO BE REMOVED LATER ON)
     test_idx = test_dataset.index 
     Y_train = np.array(Y_train, dtype=int)
+    Y_test = np.array(Y_test, dtype=int) 
     X_test = pd.DataFrame(X_test, index=test_idx)   
-    return X_train, Y_train, X_test
+    return X_train, Y_train, X_test, Y_test
 
 
 def train_assign_direction_by_period(X_train, Y_train, X_test):
@@ -87,8 +99,9 @@ def train_assign_direction_by_period(X_train, Y_train, X_test):
     # train model 
     xgb_clf = XGBClassifier(
         objective='multi:softmax',
-        use_label_encoder=False
-        ).fit(X_train, Y_train, eval_metric='merror')
+        use_label_encoder=False,
+        random_state=0
+    ).fit(X_train, Y_train, eval_metric='merror')
 
     # prediction
     Y_test_prediction = xgb_clf.predict(X_test)
@@ -101,7 +114,7 @@ def pipeline_each_period(data_chunk):
     """
     # standardize and transform
     # print('Start Training')
-    X_train, Y_train, X_test = label_data_and_transform(data_chunk)
+    X_train, Y_train, X_test, _ = label_data_and_transform(data_chunk)
     # give directions
     direction_curr_period = train_assign_direction_by_period(
         X_train, Y_train, X_test)
@@ -125,23 +138,20 @@ def train_assign_direction(raw_data,
     num_chunk = (data_to_use.shape[0] - train_period) // test_period
 
     # obtain directions 
-    # data_chunks = []
-    direction = pd.Series([], dtype=int)
+    data_chunks = []
     for i in range(num_chunk + 1):
         # obtain train and test dataset 
         train_start_idx = i * test_period
         train_end_idx = train_start_idx + train_period  # also the test start idx 
         test_end_idx = train_end_idx + test_period
         data_chunk = data_to_use.loc[train_start_idx:test_end_idx - 1]
-        # data_chunks.append(data_chunk)
-        print(f'Training period {i}')
-        direction = pd.concat([direction, pipeline_each_period(data_chunk)])
+        data_chunks.append(data_chunk)
     
-    # multiprocessing to process each chunk (TODO: FIX mp)
-    # with mp.Pool() as pool:
-    #     directions = pool.map(pipeline_each_period, data_chunks)
+    # multiprocessing to process each chunk 
+    with mp.Pool() as pool:
+        directions = pool.map(pipeline_each_period, data_chunks)
 
-    # direction = pd.concat(directions)
+    direction = pd.concat(directions)
     return direction
 
 

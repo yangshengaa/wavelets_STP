@@ -1,8 +1,8 @@
 Gradient Boosting 
-Train Score: 0.5633300901902644
-Test  Score: 0.5858622127501854
+Train Score: 0.5646466518408698
+Test  Score: 0.5858853780578206
 
 XGBoost Classifier 
-Train Score: 0.6577634667655053
-Test  Score: 0.5595580059303188
+Train Score: 0.5565194897454905
+Test  Score: 0.5831982023721275
 

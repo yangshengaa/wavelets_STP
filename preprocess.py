@@ -11,12 +11,14 @@ lag = 5 many minutes are examined for labeling trend.
 Steps: 
 1. standardize each column;
 2. assign labels; 
-3. for each window * 5 matrix, apply wavelet decomposition down to maximum level of the desired mother wavelet; flatten them and obtain the feature vector 
+3. for each window * 4 matrix, apply wavelet decomposition down to maximum level of the desired mother wavelet; flatten them and obtain the feature vector 
 4. store in preprocess folder
 
-TODO: change writing to parquet for faster IO 
-TODO: change functions to cater to pandas apply for better performances
-
+Output column name: 
+for each column (close, high, low, and etc), we preserve the wavelet type (approx/detail) and level 
+for instance: 
+    c_A_5_15 means the approx coefficient at level 5 index 15 for close price
+    v_D_3_33 means the detail coefficient at level 3 index 33 for trading volume
 """
 
 # load packages
@@ -24,13 +26,13 @@ import os
 import json
 import numpy as np
 import pandas as pd
-from multiprocessing import Process
 from sklearn.preprocessing import StandardScaler
 import pywt
 
 # constants 
-file_path = 'data/510050_1m.csv'  # path to read from
-save_path = 'preprocess'          # path to save to
+file_path = 'data/510050_1m.csv'               # path to read from
+save_path = 'preprocess/preprocess.parquet'    # path to save to
+concat = np.concatenate
 
 # load parameters
 with open('parameters/parameters.json', 'r') as f:
@@ -39,6 +41,7 @@ with open('parameters/parameters.json', 'r') as f:
 
 # hyper-parameters
 mother_wavelet = 'db4'           # the wavelet we choose to decompose
+mother_wavelet = pywt.Wavelet(mother_wavelet)
 use_cols = ['c', 'h', 'l', 'v']  # discard open
 
 
@@ -66,9 +69,12 @@ def label_data(data, window, lag, th):
     """
     print('Giving Labels ...')
     standardized_data = StandardScaler().fit_transform(data[use_cols])
-    X_raw, Y = [], []
+    X, Y = [], []
     for t in range(standardized_data.shape[0] - window - lag):
-        X_raw.append(standardized_data[t:t + window])
+        # obtain x 
+        X_raw_t = standardized_data[t:t + window]
+        X.append(dwt(X_raw_t))
+
         # use movement of close prices to assign labels
         curr_close = standardized_data[t + window, 0]
         price_movement = (
@@ -82,7 +88,7 @@ def label_data(data, window, lag, th):
         else:
             Y.append(1)
     print('Finish Labeling')
-    return np.array(X_raw), np.array(Y)
+    return np.array(X), np.array(Y)
 
 
 def dwt(x):
@@ -92,63 +98,77 @@ def dwt(x):
     :param x: each row in X_raw
     :return the flattened array
     """
-    wavelet_coefs = []
+    wavelet_coeff = []
     for i in range(x.shape[1]):
-        wavelet_coefs.append(np.concatenate(pywt.wavedec(x[:, i], mother_wavelet)))
-    return np.concatenate(wavelet_coefs)
+        wavelet_coeff.append(concat(pywt.wavedec(x[:, i], mother_wavelet)))
+    return concat(wavelet_coeff)
 
 
-def transform(X_raw):
+def obtain_col_names(data_len=window, mother_wavelet=mother_wavelet):
     """
-    convert the entire X into a wavelet coefficient dataset
+    fetch the column name for flatten wavelet features 
 
-    :param X_raw: the standardized X from the original dataframe
-    :return the wavelet features flattened in each row
+    :param data_len: the length of the data at each period, usually set to window 
+    :param mother_wavelet: the wavelet we would like to use 
     """
-    # print('Obtaining New Features from Wavelet Coefficients ...')
-    out = np.array([dwt(x) for x in X_raw])
-    # print('Finish Feature Engineering')
-    return out
+    # coin a sequence to obtain the structure
+    hypothetical_data = np.random.rand(data_len)
+    max_level = pywt.dwt_max_level(data_len, mother_wavelet)
+    hypothetical_wavelet_coeff = pywt.wavedec(hypothetical_data, mother_wavelet)
+    length_each_level = [x.shape[0] for x in hypothetical_wavelet_coeff]
+    # approx 
+    approx_length = length_each_level[0]
+    approx_names = [f'A_{max_level}_{i}' for i in range(approx_length)]
+    # detail 
+    detail_names = []
+    for n in range(max_level, 0, -1):
+        curr_idx = max_level + 1 - n
+        curr_detail_length = length_each_level[curr_idx]
+        curr_detail_names = [f'D_{n}_{i}' for i in range(curr_detail_length)]
+        detail_names = detail_names + curr_detail_names
+    return approx_names + detail_names
+    
 
-
-def save_preprocess(X, Y, save_path='preprocess', n_rows=50000):
+def make_wavelet_df_info(X, Y):
     """
-    save all preprocessed data into a csv for training and testing purposes
+    construct a dataframe with column names indicating the wavelet type (approx/detail) and level,
+    and the label. to be saved later 
 
     :param X, Y: the processed X and y
-    :param save_path: the path/folder to be saved to
-    :param n_rows: the number of rows to write at each time
     """
-    # convert to 16 for less storage
-    new_feature = pd.DataFrame(X).assign(label=Y).astype('float16').astype({'label': 'int8'})
-    print('Saving New Features to files ...')
+    # obtain column names 
+    wavelet_names_each_col = obtain_col_names()
+    wavelet_names = [] 
+    for col in use_cols:
+        wavelet_names = wavelet_names + ['{}_{}'.format(col, x) for x in wavelet_names_each_col]
+    
+    # new dataframe, convert to 32 for less storage (parquet does not support 16)
+    new_feature = pd.DataFrame(
+        X, 
+        columns=wavelet_names
+    ).assign(
+        label=Y
+    ).astype('float32').astype({'label': 'int8'})  
+    return new_feature
 
-    n_files = new_feature.shape[0] // n_rows
-    # split into a couple of files
-    p_list = []
-    for i in range(n_files + 1):
-        p_list.append(
-            Process(target=write_to_file_helper,
-                    args=(
-                        new_feature.iloc[(i * n_rows):((i + 1) * n_rows)],
-                        os.path.join(save_path, f'510050_1m_wavelets_{i}.csv')
-                    )
-                    )
-        )
-    for p in p_list:
-        p.start()
-    for p in p_list:
-        p.join()
+
+
+def write_to_parquet(df):
+    """
+    write to parquet from the constructed df 
+    """
+    print('Saving New Features to files ...')
+    df.to_parquet(save_path)
     print('New Features have been saved to {}'.format(save_path))
 
 
-def write_to_file_helper(df, name):
-    """ write file helper for multiprocessing """
-    df.to_csv(name, index=False, header=False)
-
-
+# run the following to obtain the preprocessed data 
 if __name__ == '__main__':
+    # load data 
     tbl = load_data()
-    X_raw, Y = label_data(tbl, window, lag, th)
-    X = transform(X_raw)
-    save_preprocess(X, Y)
+    # give label and obtain wavelet features 
+    X, Y = label_data(tbl, window, lag, th)
+    # pack into a dataframe 
+    df = make_wavelet_df_info(X, Y)
+    # save to folder
+    write_to_parquet(df)

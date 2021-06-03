@@ -6,8 +6,6 @@ Date Created: 2021/04/12
 This file compares performances of different ML models on 
 predicting the stock trend using wavelet coefficients 
 
-TODO: change to reading parquet 
-
 """
 
 # load preprocessing
@@ -31,7 +29,6 @@ from xgboost import XGBClassifier
 import matplotlib.pyplot as plt 
 
 # constants 
-curr_folder = os.path.dirname(os.path.abspath(__file__))
 report_path = 'report'
 acc_report_file_path = 'report/accuracy.txt'
 
@@ -39,19 +36,9 @@ acc_report_file_path = 'report/accuracy.txt'
 def load_preprocess_data():
     """ read in preprocess data, obtain X and Y"""
     print('Loading Data ...')
-    tbl = pd.DataFrame()
-    files_to_read = os.listdir('preprocess')
-    files_to_read.sort()
-    files_to_read = [os.path.join('preprocess', f) for f in files_to_read]
-
-    # mp pool to read
-    tbl_list = []
-    read_df = partial(pd.read_csv, header=None)
-    with mp.Pool() as pool:
-        tbl_list = pool.map(read_df, files_to_read)
-    tbl = pd.concat(tbl_list).to_numpy()
-    Y = tbl[:, -1]
-    X = tbl[:, :-1]
+    df = pd.read_parquet('preprocess/preprocess.parquet')
+    X = df.drop(columns=['label'])
+    Y = df['label']
     print('Finish Loading')
     return X, Y
 
@@ -125,8 +112,10 @@ def train_test_xgb(X_train, X_test, Y_train, Y_test):
     xgb_clf = XGBClassifier(
         objective='multi:softmax', 
         use_label_encoder=False
-        ).fit(X_train, Y_train, 
-              eval_metric='merror')
+    ).fit(
+        X_train, Y_train, 
+        eval_metric='merror'
+    )
     Y_train_predict = xgb_clf.predict(X_train) 
     Y_test_predict = xgb_clf.predict(X_test) 
     xgb_train_acc = (Y_train_predict == Y_train).mean()
