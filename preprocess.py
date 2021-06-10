@@ -19,6 +19,10 @@ for each column (close, high, low, and etc), we preserve the wavelet type (appro
 for instance: 
     c_A_5_15 means the approx coefficient at level 5 index 15 for close price
     v_D_3_33 means the detail coefficient at level 3 index 33 for trading volume
+
+TODO: convert the original data to parquet; revise reading (only read some columns, maybe faster)
+TODO: create a synthetic dataset that contains slight temporal dependencies, coupled with Gaussian WN
+
 """
 
 # load packages
