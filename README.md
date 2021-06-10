@@ -2,7 +2,7 @@
 
 This is an attempt to use wavelet coefficients obtained from discrete wavelet transform (DWT) and wavelet packets (WPT) as engineered features on stock trend prediction (STP). This project is inspired by [Multi-scale Two-way Deep Neural Network](https://www.ijcai.org/Proceedings/2020/0628.pdf).
 
-(DEBUGGING! THE FOLLOWING IS NOT REPRODUCIBLE!)
+(**DEBUGGING... THE FOLLOWING IS NOT REPRODUCIBLE!**)
 
 Example: For the next 120 days, use XGBoost classifier on the previous 720 days
 <p align="center">
@@ -19,17 +19,20 @@ Example: For the next 120 days, use XGBoost classifier on the previous 720 days
 - **train_test.py**: fit a couple of classic ML models and track their accuracies;
 - **naive_trading.py**: develop a simple long short trading strategy using the model with the best accuracy, and report some metrics on the strategies (annualized return, Sharpe Ratio, Calmar Ratio, maximum drawdown, and etc...)
 
-## For developer: Notes after Meeting with Professor Alex Cloninger
+## The Next Step ... (Notes after Meeting with Professor Alex Cloninger)
 
-Date: 2021/05/24
+Things to try:
 
-1. Interpretability:
+1. Create synthetic data with local clustering effect (slight temporal dependence) on a Gaussian WN sequence;
+2. Give predictions each time based on a couple of trained classifier to reduce randomness;
+3. try regression instead of classification?
+4. Interpretability:
    1. Add wavelet functions back to obtain the denoised sequence and compare;
    2. Visualize coefficients on a tree structure;
    3. Try sparse component analysis/nonnegative matrix factorization
-2. Use validation set more often: pick the best performing parameters on validation set and look at performance on the upcoming testing set.
-3. Presentable project style: [Documenting your projects on GitHub](https://guides.github.com/features/wikis/)
-4. Change starting point for 720/120; visualize confusion matrix at each period.
+5. Use validation set more often: pick the best performing parameters on validation set and look at performance on the upcoming testing set.
+6. Presentable project style: [Documenting your projects on GitHub](https://guides.github.com/features/wikis/)
+7. Change starting point for 720/120; visualize confusion matrix at each period.
 
 ## Technical issues
 
