@@ -23,7 +23,7 @@ Example: For the next 120 days, use XGBoost classifier on the previous 720 days
 
 Things to try:
 
-1. Create synthetic data with local clustering effect (slight temporal dependence) on a Gaussian WN sequence;
+1. Create synthetic data with local clustering effect (slight temporal dependence) on a Gaussian WN sequence; (take time series analysis 181E into consideration, in particular)
 2. Give predictions each time based on a couple of trained classifier to reduce randomness;
 3. try regression instead of classification?
 4. Interpretability:
